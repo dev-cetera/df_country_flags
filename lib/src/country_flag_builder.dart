@@ -25,7 +25,7 @@ class CountryFlagBuilder extends StatelessWidget {
   //
   //
 
-  final String cacheKey;
+  final String? cacheKey;
   final CountryCode countryCode;
   final double? width;
   final double? height;
@@ -50,20 +50,22 @@ class CountryFlagBuilder extends StatelessWidget {
   //
   //
 
-  Future<Uint8List> _loadSvg(BuildContext context) async {
+  Future<Uint8List> _loadSvg(BuildContext context, String? cacheKey) async {
     final p = await SharedPreferences.getInstance();
     final assetPath = countryCode.assetPath;
-    final cacheKey1 = '${cacheKey}_${countryCode.name}';
-    try {
-      final base64String = p.getString(cacheKey1);
-      if (base64String != null) {
-        final byteData = base64Decode(base64String);
-        return byteData;
-      } else {
-        log('No cache entry for: $assetPath', name: 'df_country_flags');
+    final k = cacheKey != null ? '${cacheKey}_${countryCode.name}' : null;
+    if (k != null) {
+      try {
+        final base64String = p.getString(k);
+        if (base64String != null) {
+          final byteData = base64Decode(base64String);
+          return byteData;
+        } else {
+          log('No cache entry for: $assetPath', name: 'df_country_flags');
+        }
+      } catch (e) {
+        log('Error retrieving cache: $e', name: 'df_country_flags');
       }
-    } catch (e) {
-      log('Error retrieving cache: $e', name: 'df_country_flags');
     }
     try {
       final byteData = await rootBundle.loadStructuredBinaryData(
@@ -71,11 +73,13 @@ class CountryFlagBuilder extends StatelessWidget {
         (e) => e.buffer.asUint8List(),
       );
       debugPrint('[df_country_flags] Loaded from assets: $assetPath');
-      try {
-        final base64String = base64Encode(byteData);
-        await p.setString(cacheKey1, base64String);
-      } catch (e) {
-        log('Error writing cache: $e', name: 'df_country_flags');
+      if (k != null) {
+        try {
+          final base64String = base64Encode(byteData);
+          await p.setString(k, base64String);
+        } catch (e) {
+          log('Error writing cache: $e', name: 'df_country_flags');
+        }
       }
       return byteData;
     } catch (e) {
@@ -101,7 +105,7 @@ class CountryFlagBuilder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Uint8List>(
-      future: _loadSvg(context),
+      future: _loadSvg(context, cacheKey),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           return builder(context, snapshot.data!);
