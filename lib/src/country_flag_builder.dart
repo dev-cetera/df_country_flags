@@ -25,6 +25,7 @@ class CountryFlagBuilder extends StatelessWidget {
   //
   //
 
+  final String cacheKey;
   final CountryCode countryCode;
   final double? width;
   final double? height;
@@ -37,6 +38,7 @@ class CountryFlagBuilder extends StatelessWidget {
 
   const CountryFlagBuilder({
     super.key,
+    this.cacheKey = 'df_country_flags',
     this.width,
     this.height,
     required this.countryCode,
@@ -48,11 +50,12 @@ class CountryFlagBuilder extends StatelessWidget {
   //
   //
 
-  Future<Uint8List> _loadSvg(BuildContext context, String assetPath) async {
+  Future<Uint8List> _loadSvg(BuildContext context) async {
     final p = await SharedPreferences.getInstance();
-    final cacheKey = 'svg_$assetPath';
+    final assetPath = countryCode.assetPath;
+    final cacheKey1 = '${cacheKey}_${countryCode.name}';
     try {
-      final base64String = p.getString(cacheKey);
+      final base64String = p.getString(cacheKey1);
       if (base64String != null) {
         final byteData = base64Decode(base64String);
         return byteData;
@@ -70,7 +73,7 @@ class CountryFlagBuilder extends StatelessWidget {
       debugPrint('[df_country_flags] Loaded from assets: $assetPath');
       try {
         final base64String = base64Encode(byteData);
-        await p.setString(cacheKey, base64String);
+        await p.setString(cacheKey1, base64String);
       } catch (e) {
         log('Error writing cache: $e', name: 'df_country_flags');
       }
@@ -98,7 +101,7 @@ class CountryFlagBuilder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Uint8List>(
-      future: _loadSvg(context, countryCode.assetPath),
+      future: _loadSvg(context),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           return builder(context, snapshot.data!);

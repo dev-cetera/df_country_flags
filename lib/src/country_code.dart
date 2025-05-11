@@ -285,11 +285,19 @@ enum CountryCode {
   //
   //
 
-  String get assetPath {
+  String get countryCode {
     final code = name.toLowerCase().replaceAll('_', '-');
+    return code;
+  }
+
+  //
+  //
+  //
+
+  String get assetPath {
     if (custom) {
-      return 'packages/df_country_flags/assets/custom/svg/$code.svg';
+      return 'packages/df_country_flags/assets/custom/svg/$countryCode.svg';
     }
-    return 'packages/df_country_flags/assets/country-flags/svg/$code.svg';
+    return 'packages/df_country_flags/assets/country-flags/svg/$countryCode.svg';
   }
 }
