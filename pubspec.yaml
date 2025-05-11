@@ -1,0 +1,47 @@
+##.title
+## ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+##
+## Dart/Flutter (DF) Packages by dev-cetera.com & contributors. The use of this
+## source code is governed by an MIT-style license described in the LICENSE
+## file located in this project's root directory.
+##
+## See: https://opensource.org/license/mit
+##
+## ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+##.title~
+
+name: df_country_flags
+description: Country flags in SVG format for Flutter.
+version: 0.1.0
+repository: https://github.com/robmllze/df_country_flags
+funding:
+  - https://www.buymeacoffee.com/dev_cetera
+topics:
+  - country
+  - flags
+  - svg
+  
+## -----------------------------------------------------------------------------
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+## -----------------------------------------------------------------------------
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_svg: ^2.1.0
+  shared_preferences: ^2.5.3
+
+## -----------------------------------------------------------------------------
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+
+## -----------------------------------------------------------------------------
+
+flutter:
+  assets:
+    - assets/country-flags/svg/
+    - assets/custom/svg/
