@@ -14,12 +14,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:developer';
+import 'package:df_log/df_log.dart';
 
 import 'country_code.dart';
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
+@visibleForTesting
 class CountryFlagBuilder extends StatelessWidget {
   //
   //
@@ -31,6 +32,9 @@ class CountryFlagBuilder extends StatelessWidget {
   final double? height;
   final Widget Function(BuildContext context, Uint8List byteData) builder;
   final Widget Function(BuildContext context, String assetPath)? fallbackBuilder;
+
+  // In-memory cache for flag data
+  static final Map<String, Uint8List> _memoryCache = {};
 
   //
   //
@@ -50,50 +54,60 @@ class CountryFlagBuilder extends StatelessWidget {
   //
   //
 
-  Future<Uint8List> _loadSvg(BuildContext context, String? cacheKey) async {
-    final p = await SharedPreferences.getInstance();
+  Future<Uint8List?> _loadSvg(BuildContext context, String? cacheKey) async {
     final assetPath = countryCode.assetPath;
-    final k = cacheKey != null ? '${cacheKey}_${countryCode.name}' : null;
+    final k = cacheKey != null ? '${cacheKey}_${countryCode.name.toLowerCase()}' : null;
+
     if (k != null) {
+      // Check in-memory cache first.
+      if (_memoryCache.containsKey(k)) {
+        return _memoryCache[k]!;
+      }
+
+      // Fall back to SharedPreferences.
       try {
+        final p = await SharedPreferences.getInstance();
         final base64String = p.getString(k);
         if (base64String != null) {
           final byteData = base64Decode(base64String);
+          _memoryCache[k] = byteData;
           return byteData;
-        } else {
-          log('No cache entry for: $assetPath', name: 'df_country_flags');
         }
       } catch (e) {
-        log('Error retrieving cache: $e', name: 'df_country_flags');
+        Glog.err(e);
       }
     }
+
+    // Load from assets if not in cache.
     try {
       final byteData = await rootBundle.loadStructuredBinaryData(
         assetPath,
         (e) => e.buffer.asUint8List(),
       );
-      debugPrint('[df_country_flags] Loaded from assets: $assetPath');
       if (k != null) {
         try {
+          // Store in memory cache.
+          _memoryCache[k] = byteData;
           final base64String = base64Encode(byteData);
+          final p = await SharedPreferences.getInstance();
+          // Store in SharedPreferences.
           await p.setString(k, base64String);
         } catch (e) {
-          log('Error writing cache: $e', name: 'df_country_flags');
+          Glog.err(e);
         }
       }
       return byteData;
-    } catch (e) {
-      log('Error loading asset: $e', name: 'df_country_flags');
+    } catch (_) {
+      Glog.err('Error loading asset: $assetPath. Falling back to dummy asset.');
       try {
         final fallbackBytes = await rootBundle.loadStructuredBinaryData(
           CountryCode.DUMMY.assetPath,
           (e) => e.buffer.asUint8List(),
         );
-        log('Loaded fallback SVG', name: 'df_country_flags');
         return fallbackBytes;
-      } catch (fallbackError) {
-        log('Error loading fallback SVG: $fallbackError', name: 'df_country_flags');
-        rethrow;
+      } catch (_) {
+        Glog.err('Error loading dummy asset. Falling back to null.');
+        return null;
       }
     }
   }
@@ -104,10 +118,10 @@ class CountryFlagBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Uint8List>(
+    return FutureBuilder(
       future: _loadSvg(context, cacheKey),
       builder: (context, snapshot) {
-        if (snapshot.hasData) {
+        if (snapshot.data != null) {
           return builder(context, snapshot.data!);
         }
         return fallbackBuilder != null
