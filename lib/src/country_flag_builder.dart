@@ -74,7 +74,7 @@ class CountryFlagBuilder extends StatelessWidget {
           return byteData;
         }
       } catch (e) {
-        Glog.err(e);
+        Log.err(e);
       }
     }
 
@@ -93,12 +93,12 @@ class CountryFlagBuilder extends StatelessWidget {
           // Store in SharedPreferences.
           await p.setString(k, base64String);
         } catch (e) {
-          Glog.err(e);
+          Log.err(e);
         }
       }
       return byteData;
     } catch (_) {
-      Glog.err('Error loading asset: $assetPath. Falling back to dummy asset.');
+      Log.err('Error loading asset: $assetPath. Falling back to dummy asset.');
       try {
         final fallbackBytes = await rootBundle.loadStructuredBinaryData(
           CountryCode.DUMMY.assetPath,
@@ -106,7 +106,7 @@ class CountryFlagBuilder extends StatelessWidget {
         );
         return fallbackBytes;
       } catch (_) {
-        Glog.err('Error loading dummy asset. Falling back to null.');
+        Log.err('Error loading dummy asset. Falling back to null.');
         return null;
       }
     }
