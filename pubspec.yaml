@@ -12,7 +12,7 @@
 
 name: df_country_flags
 description: Country flags in SVG format for Flutter.
-version: 0.2.0
+version: 0.2.2
 repository: https://github.com/robmllze/df_country_flags
 funding:
   - https://www.buymeacoffee.com/dev_cetera
@@ -32,13 +32,13 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_svg: ^2.1.0
-  df_log: ^0.3.4
+  df_log: ^0.3.10
   shared_preferences: ^2.5.3
 
 ## -----------------------------------------------------------------------------
 
 dev_dependencies:
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 ## -----------------------------------------------------------------------------
 
